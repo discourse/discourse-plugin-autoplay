@@ -2,24 +2,26 @@ import Preferences from 'discourse/controllers/preferences';
 import RouteTopic from 'discourse/routes/topic';
 import {withPluginApi} from 'discourse/lib/plugin-api';
 
-function playMedia(api) {
-  let user = api.getCurrentUser();
-  if (user) {
-    const userEnabled = user.get('custom_fields.autoplay_first_media');
-    if (!userEnabled || user.get('trust_level') < Discourse.SiteSettings.autoplay_required_trust_level) {
+function playMedia(evt) {
+
+  const { controller } = evt;
+  const { currentUser, siteSettings } = controller;
+  if (currentUser) {
+    const userEnabled = currentUser.get('custom_fields.autoplay_first_media');
+    if (!userEnabled || currentUser.get('trust_level') < siteSettings.autoplay_required_trust_level) {
       return;
     }
 
-    let observer = new MutationObserver(function () {
-      let firstPost = $('#post_1');
+    const observer = new MutationObserver(function () {
+      const firstPost = $('#post_1');
       if (firstPost.length > 0) {
         observer.disconnect();
 
-        let videos = firstPost.find('.ytp-large-play-button');
+        const videos = firstPost.find('.ytp-large-play-button');
         if (videos.length > 0) {
           videos.first().trigger('click');
         } else {
-          let audios = firstPost.find('audio');
+          const audios = firstPost.find('audio');
           if (audios.length > 0) {
             audios[0].play();
           }
@@ -35,14 +37,9 @@ export default {
   name: 'autoplay-media',
   initialize() {
     withPluginApi('0.1', api => {
-      if (Discourse.SiteSettings.autoplay_enabled) {
-        RouteTopic.on('setupTopicController', playMedia.bind(null, api));
-
-        Preferences.reopen({
-          autoplayEnabled: function() {
-            return Discourse.SiteSettings.autoplay_enabled;
-          }.property()
-        });
+      const siteSettings = api.container.lookup('site-settings:main');
+      if (siteSettings.autoplay_enabled) {
+        RouteTopic.on('setupTopicController', playMedia);
       }
     });
   }

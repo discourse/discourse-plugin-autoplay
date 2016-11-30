@@ -1,9 +1,9 @@
-{{#if autoplayEnabled}}
+{{#if siteSettings.autoplay_enabled}}
 <div class="control-group autoplay">
   <label class="control-label">{{i18n 'autoplay.settings_label'}}</label>
   <div class="controls">
     <label class='checkbox-label'>
-      {{input type="checkbox" checked=controller.model.custom_fields.autoplay_first_media}}
+      {{input type="checkbox" checked=model.custom_fields.autoplay_first_media}}
       {{i18n 'autoplay.opt_in'}}
     </label>
   </div>
